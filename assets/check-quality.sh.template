@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# TEMPLATE: Adapt to the repository's existing build/test workflow.
+# Prefer existing project scripts over duplicating logic.
+
+echo "=== Build ==="
+# cmake --build build
+
+echo "=== Test ==="
+# ctest --test-dir build --output-on-failure
+
+echo "=== Lizard ==="
+# lizard -C 10 -L 80 -a 6 src include
+
+echo "=== clang-tidy ==="
+# run-clang-tidy -p build
+
+echo "=== Quality check completed ==="
