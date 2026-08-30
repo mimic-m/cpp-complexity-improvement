@@ -1,19 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# TEMPLATE: Adapt to the repository's existing build/test workflow.
-# Prefer existing project scripts over duplicating logic.
+not_configured() {
+    local phase="$1"
+    printf 'ERROR: %s is not configured. Copy this template and replace every phase with the repository command.\n' "$phase" >&2
+    return 2
+}
+
+run_build() {
+    # Example: cmake --build build
+    not_configured "Build"
+}
+
+run_tests() {
+    # Example: ctest --test-dir build --output-on-failure
+    not_configured "Test"
+}
+
+run_lizard() {
+    # Report-only baseline example (not a ratchet by itself):
+    # lizard -C 10 -T nloc=80 -a 6 -i -1 src include
+    # Add a per-function before/after comparison or a new-function gate here.
+    not_configured "Lizard and its ratchet"
+}
+
+run_clang_tidy() {
+    # Merge the required checks and thresholds into the existing .clang-tidy.
+    # Example: run-clang-tidy -p build
+    not_configured "clang-tidy"
+}
 
 echo "=== Build ==="
-# cmake --build build
+run_build
 
 echo "=== Test ==="
-# ctest --test-dir build --output-on-failure
+run_tests
 
 echo "=== Lizard ==="
-# lizard -C 10 -L 80 -a 6 src include
+run_lizard
 
 echo "=== clang-tidy ==="
-# run-clang-tidy -p build
+run_clang_tidy
 
 echo "=== Quality check completed ==="

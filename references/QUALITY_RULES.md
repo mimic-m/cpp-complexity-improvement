@@ -22,6 +22,8 @@
 
 プロジェクト既存規約がある場合は、既存規約を優先する。
 
+Lizardの `length` と `nloc` は別指標である。NLOCの閾値には `-T nloc=80` を使い、`-L 80` で代用しない。
+
 ## ラチェット方式
 
 | 状態 | 判定 |
@@ -34,6 +36,24 @@
 
 差分判定のためだけに巨大な独自解析基盤を作らない。
 
+ただし、警告総数だけの比較では、ある関数の改善が別の関数の悪化を相殺できる。少なくとも次のキーで変更前後を比較する。
+
+- ファイルパス
+- 関数名または安定した関数識別子
+- CCN
+- NLOC
+- 引数数
+- Cognitive Complexity
+- ネスト深度
+
+Lizardの変更前レポートを終了コードでゲートしない場合は、報告専用として次のように実行できる。
+
+```sh
+lizard -C 10 -T nloc=80 -a 6 -i -1 src include
+```
+
+`-i -1` は警告を許容してレポートを得るためのオプションであり、ラチェット判定そのものではない。CIの合否は、保存した変更前値との関数単位比較、または新規関数だけの閾値判定で決める。
+
 ## 外部I/Fの識別
 
 次のいずれかに該当するものは外部I/F候補として保守的に扱う。
@@ -44,6 +64,8 @@
 - API仕様書に記載された関数・型
 - ABI互換性が要求される型
 - 外部向けテストが固定するI/F
+- CLIオプション、設定ファイル、永続化形式、通信プロトコル
+- callback、vtable、FFI境界、プラグイン境界
 
 不明なら変更しない。
 
@@ -124,14 +146,39 @@ if (is_sensor_ready(state) &&
 
 既存 `.clang-tidy` を上書きしない。
 
-追加候補:
+追加対象:
 
 ```text
 readability-function-cognitive-complexity
 readability-function-size
 ```
 
-導入時に無関係な大量警告を一括修正しない。
+clang-tidyの既定値だけでは本スキルの初期基準にならない。Cognitive Complexityの既定閾値は25で、`readability-function-size` の引数数とネスト深度は既定では無効である。既存設定へ、プロジェクト規約に合わせた値をマージする。
+
+規約がない場合の初期設定例:
+
+```yaml
+Checks: >
+  -*,
+  readability-function-cognitive-complexity,
+  readability-function-size
+CheckOptions:
+  readability-function-cognitive-complexity.Threshold: 15
+  readability-function-size.ParameterThreshold: 6
+  readability-function-size.NestingThreshold: 3
+```
+
+既存の `Checks` や `CheckOptions` は保持する。LizardのNLOCとclang-tidyの行数は同一指標ではないため、`LineThreshold` をNLOCの代用として機械的に設定しない。
+
+解析には対象ソースを含む有効な `compile_commands.json` が必要である。差分行だけの解析は、関数宣言行に出る診断やヘッダ変更の影響を見落とし得るため、変更関数を含む翻訳単位全体を対象にする。
+
+公開APIが引数数閾値を超える場合は、シグネチャを変えず、仕様上の例外として警告と理由を記録する。無関係な既存警告を一括修正しない。
+
+ツール仕様:
+
+- [Lizard README](https://github.com/terryyin/lizard/blob/master/README.rst)
+- [clang-tidy: readability-function-cognitive-complexity](https://clang.llvm.org/extra/clang-tidy/checks/readability/function-cognitive-complexity.html)
+- [clang-tidy: readability-function-size](https://clang.llvm.org/extra/clang-tidy/checks/readability/function-size.html)
 
 ## コメント
 
