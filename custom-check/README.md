@@ -16,10 +16,22 @@ LLVM/clang-tidyの正式なモジュールとして、関数内の重要な制�
 ```sh
 cmake -S custom-check -B build/custom-check \
   -DLLVM_DIR=/path/to/lib/cmake/llvm \
-  -DClang_DIR=/path/to/lib/cmake/clang
+  -DClang_DIR=/path/to/lib/cmake/clang \
+  -DCMAKE_CXX_COMPILER=/path/to/bin/clang++ \
+  -DCLANG_TIDY_EXECUTABLE=/path/to/bin/clang-tidy
 cmake --build build/custom-check
 cmake --build build/custom-check --target company_internal_comments_tests
 ```
 
-LLVM/Clangの導入先によって `LLVM_DIR` と `Clang_DIR` は変更してください。
+LLVM/Clang 18以降が必要です。パスは同じLLVMの導入先へ揃えてください。配布LLVMと異なるコンパイラのABIでビルドすると、ロード時に未解決シンボルが発生する場合があります。
 CMakeの標準ジェネレーターを使用するため、Ninjaは必要ありません。既存のMakeやXcodeなど、環境にあるCMake対応のビルドツールが選択されます。
+
+テストはプラグインの登録、正常終了、成功用0件・失敗用7件の診断を確認します。Boolean演算子数1は対象外、2は対象とし、演算子オーバーロード呼び出しでも停止しないことを検証します。
+
+インストーラーのツール選択、テスト実行中の異常終了、品質ゲートの回帰テスト:
+
+```sh
+python3 tests/test_tooling.py /path/to/bin/clang-tidy
+```
+
+実プロジェクトの解析でも`-load /path/to/company-internal-comments.so`を指定します。警告の合否判定は[品質チェックの設定例](../README.md#integrate-with-a-cc-project)を参照してください。

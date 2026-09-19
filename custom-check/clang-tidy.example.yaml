@@ -4,6 +4,8 @@ Checks: >
   readability-function-cognitive-complexity,
   readability-function-size,
   company-internal-comments
+# Strict gate for new code or a target with no existing diagnostics.
+WarningsAsErrors: 'readability-*,company-internal-comments'
 CheckOptions:
   readability-function-cognitive-complexity.Threshold: 15
   readability-function-size.LineThreshold: 80

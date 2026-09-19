@@ -120,7 +120,7 @@ bool CompanyInternalCommentsCheck::isStateAssignment(
     return false;
   const auto *LHS = Operator->getLHS()->IgnoreParenImpCasts();
   if (const auto *Reference = dyn_cast<DeclRefExpr>(LHS))
-    return isStateName(Reference->getName());
+    return isStateName(Reference->getDecl()->getName());
   if (const auto *Member = dyn_cast<MemberExpr>(LHS))
     return isStateName(Member->getMemberDecl()->getName());
   return false;
@@ -128,7 +128,8 @@ bool CompanyInternalCommentsCheck::isStateAssignment(
 
 bool CompanyInternalCommentsCheck::isStateSetter(const CallExpr *Call) const {
   const auto *Declaration = Call->getDirectCallee();
-  return Declaration && StateSetters.match(Declaration->getName());
+  return Declaration && Declaration->getIdentifier() &&
+         StateSetters.match(Declaration->getName());
 }
 
 bool CompanyInternalCommentsCheck::isStateName(StringRef Name) const {
@@ -159,7 +160,7 @@ bool CompanyInternalCommentsCheck::hasAdjacentComment(
   if (BlankLines > MaxBlankLines)
     return false;
 
-  if (End >= 2 && Buffer.substr(0, End).endswith("*/")) {
+  if (End >= 2 && Buffer.substr(0, End).ends_with("*/")) {
     size_t Start = Buffer.substr(0, End - 2).rfind("/*");
     return Start != StringRef::npos;
   }
@@ -167,7 +168,7 @@ bool CompanyInternalCommentsCheck::hasAdjacentComment(
   size_t LineStart = Buffer.substr(0, End).rfind('\n');
   LineStart = LineStart == StringRef::npos ? 0 : LineStart + 1;
   StringRef Line = Buffer.slice(LineStart, End).trim();
-  return Line.startswith("//");
+  return Line.starts_with("//");
 }
 
 void CompanyInternalCommentsCheck::reportMissingComment(SourceLocation Location,

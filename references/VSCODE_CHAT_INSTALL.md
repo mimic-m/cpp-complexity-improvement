@@ -24,7 +24,7 @@ Chatの実行環境がタスク実行を許可しない場合は、ターミナ�
 bash scripts/install-codex.sh
 ```
 
-このスクリプトはLLVM/ClangとCMakeなど必要最小限の依存関係を準備し、CMakeの標準ジェネレーターで`company-internal-comments`をビルドしてテストします。作業ディレクトリはリポジトリ外でも構いません。
+このスクリプトはLLVM/Clang 18以降とCMakeを準備し、選択したLLVMのClangで`company-internal-comments`をビルドして、同じLLVMのclang-tidyでテストします。作業ディレクトリはリポジトリ外でも構いません。
 
 環境変数で上書きできます。
 
@@ -37,7 +37,10 @@ LLVMを手動で導入済みでCMake設定ファイルの場所が標準外の�
 ```sh
 LLVM_DIR=/opt/llvm/lib/cmake/llvm \
 Clang_DIR=/opt/llvm/lib/cmake/clang \
+SKIP_DEPENDENCY_INSTALL=1 \
 bash scripts/install-codex.sh
 ```
 
-インストール後の品質チェックは、導入先プロジェクトで`tools/check-quality.sh`にBuild、Unit Test、clang-tidyのコマンドを設定して実行します。
+`LLVM_CONFIG`で`llvm-config`の実行ファイルを指定できます。未指定時は`LLVM_DIR`に対応する配置、`LLVM_VERSION`付きのコマンド、Homebrewのprefixから選択します。`CLANG_TIDY`も上書きできますが、LLVMのメジャーバージョンが一致しない場合は停止します。`CXX`未指定時は同じLLVMの`clang++`を使います。コンパイラやLLVMのバージョンを変える場合は、`BUILD_DIR`を別ディレクトリにしてください。
+
+インストール後は、[品質チェックの設定例](../README.md#integrate-with-a-cc-project)に従い、Build、Unit Test、プラグイン読み込みを含む解析・合否判定コマンドを設定します。

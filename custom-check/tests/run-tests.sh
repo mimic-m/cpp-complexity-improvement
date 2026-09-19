@@ -10,21 +10,29 @@ if ! command -v "$clang_tidy" >/dev/null 2>&1; then
   exit 2
 fi
 
+checks="$("$clang_tidy" -load "$plugin" -checks=-*,company-internal-comments \
+  -config='{}' -list-checks)"
+if ! printf '%s\n' "$checks" | grep -Eq '^ *company-internal-comments$'; then
+  echo "company-internal-comments was not loaded" >&2
+  exit 1
+fi
+
 run_case() {
   local file="$1"
   local expected="$2"
   local output
   set +e
-  output="$($clang_tidy -load "$plugin" -checks=-*,company-internal-comments \
+  output="$("$clang_tidy" -load "$plugin" -checks=-*,company-internal-comments \
+    --use-color=false --warnings-as-errors= \
     -config='{CheckOptions: [{key: company-internal-comments.BooleanOperatorThreshold, value: "1"}]}' \
-    "$root/cases/$file" 2>&1)"
+    "$root/cases/$file" -- -std=c++17 2>&1)"
   local status=$?
   set -e
   local count
-  count="$(printf '%s\n' "$output" | grep -c 'company-internal-comments' || true)"
-  if [[ "$count" != "$expected" || ( "$expected" == "0" && "$status" != "0" ) ]]; then
+  count="$(printf '%s\n' "$output" | grep -Ec ': warning: .*\[company-internal-comments\]$' || true)"
+  if [[ "$count" != "$expected" || "$status" != "0" ]]; then
     printf '%s\n' "$output"
-    echo "Expected $expected diagnostics in $file, got $count" >&2
+    echo "Expected $expected diagnostics and exit 0 in $file, got $count and exit $status" >&2
     exit 1
   fi
 }

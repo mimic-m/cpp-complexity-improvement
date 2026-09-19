@@ -50,11 +50,12 @@ Coding Agent
 bash scripts/install-codex.sh
 ```
 
-このスクリプトはLLVM/ClangとCMakeなど必要最小限の依存関係を準備し、CMakeの標準ジェネレーターで`company-internal-comments`のビルドとテストを実行します。標準外のLLVMを使う場合は次のように指定できます。
+このスクリプトはLLVM/Clang 18以降とCMakeを準備し、同じLLVMのClangで`company-internal-comments`をビルドして、そのLLVMのclang-tidyでテストします。`LLVM_VERSION=18`のようにメジャーバージョンを指定できます。LLVMを導入済みで標準外の配置を使う場合は、次のように指定するとパッケージのインストールを省略できます。
 
 ```sh
 LLVM_DIR=/opt/llvm/lib/cmake/llvm \
 Clang_DIR=/opt/llvm/lib/cmake/clang \
+SKIP_DEPENDENCY_INSTALL=1 \
 bash scripts/install-codex.sh
 ```
 
@@ -78,14 +79,19 @@ bash scripts/install-vscode-chat.sh
 
 このリポジトリは品質基盤を提供するSkillであり、製品コードや特定のBuild Systemは含みません。導入先プロジェクトでは、既存のBuild/Test手順を維持したまま、品質チェック入口へコマンドを設定します。
 
+次は、既存警告がない対象向けに、警告を失敗扱いにする設定例です。`PATH`はプラグインのビルドに使ったLLVMの`bin`へ、`-load`は実際に生成したプラグインの絶対パスへ置き換えます。
+
 ```sh
+export PATH="/path/to/llvm/bin:$PATH"
 BUILD_COMMAND='cmake --build build' \
 TEST_COMMAND='ctest --test-dir build --output-on-failure' \
-CLANG_TIDY_COMMAND='run-clang-tidy -p build' \
+CLANG_TIDY_COMMAND='run-clang-tidy -p build -load "/path/to/company-internal-comments.so" -warnings-as-errors="*"' \
 bash tools/check-quality.sh
 ```
 
-`compile_commands.json`を生成し、既存の`.clang-tidy`へ設定例をマージしてください。既存設定の上書きや、既存違反の一括修正は行いません。
+`compile_commands.json`を生成し、既存の`.clang-tidy`へ設定例をマージしてください。独自チェックは名前を設定するだけでは有効にならず、解析時の`-load`が必要です。
+
+既存警告がある対象では、一括で警告をエラー化せず、`CLANG_TIDY_COMMAND`に導入先の関数単位のラチェット判定コマンドを設定します。そのコマンドはプラグインを読み込んで解析し、新規違反・指標悪化・解析失敗で非0を返す必要があります。設定例の`WarningsAsErrors`もこの運用に合わせて調整します。`tools/check-quality.sh`自体は診断の比較を行わず、各コマンドの終了コードを伝播します。
 
 ## Initial Thresholds
 

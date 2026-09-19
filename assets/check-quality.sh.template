@@ -19,7 +19,9 @@ run_tests() {
 
 run_clang_tidy() {
     # Merge the required checks and thresholds into the existing .clang-tidy.
-    # Example: run-clang-tidy -p build
+    # Strict gate example (new code / no existing diagnostics):
+    # run-clang-tidy -p build -load /path/to/company-internal-comments.so -warnings-as-errors='*'
+    # For legacy code, call the repository's per-function ratchet gate instead.
     not_configured "clang-tidy"
 }
 

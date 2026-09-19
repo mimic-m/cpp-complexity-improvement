@@ -1,7 +1,7 @@
 void set_state(int);
 
 void fail_cases(bool enabled, bool valid, int state) {
-  if (enabled && valid) {
+  if (enabled && valid && state >= 0) {
   }
 
   for (int i = 0; i < 3; ++i) {
@@ -15,17 +15,17 @@ void fail_cases(bool enabled, bool valid, int state) {
   set_state(3);
 }
 
-void unrelated_comment(bool enabled, bool valid) {
+void unrelated_comment(bool enabled, bool valid, bool ready) {
   // This describes a previous operation.
   enabled = valid;
-  if (enabled && valid) {
+  if (enabled && valid && ready) {
   }
 }
 
 void nested(bool outer, bool first, bool second) {
   // The outer condition does not describe the nested condition.
   if (outer) {
-    if (first && second) {
+    if (first && second && outer) {
     }
   }
 }
