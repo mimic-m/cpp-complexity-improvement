@@ -22,3 +22,4 @@ cmake --build build/custom-check --target company_internal_comments_tests
 ```
 
 LLVM/Clangの導入先によって `LLVM_DIR` と `Clang_DIR` は変更してください。
+CMakeの標準ジェネレーターを使用するため、Ninjaは必要ありません。既存のMakeやXcodeなど、環境にあるCMake対応のビルドツールが選択されます。

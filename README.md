@@ -2,7 +2,7 @@
 
 > **C/C++の外部I/Fを守りながら、複雑度と可読性を継続的に改善するAgent Skill**
 
-Lizard、clang-tidy、独自のclang-tidy Checkを組み合わせ、Coding Agentによる安全な品質改善ループを導入します。メトリクスを下げること自体を目的にせず、仕様互換性、Build、Unit Test、読みやすさを優先します。
+clang-tidyと独自のclang-tidy Checkを組み合わせ、Coding Agentによる安全な品質改善ループを導入します。メトリクスを下げること自体を目的にせず、仕様互換性、Build、Unit Test、読みやすさを優先します。
 
 <p align="center">
 	<strong>Build / Test / Analyze / Improve / Verify</strong>
@@ -11,8 +11,7 @@ Lizard、clang-tidy、独自のclang-tidy Checkを組み合わせ、Coding Agent
 ## Highlights
 
 - **外部I/Fを変更しない**: 公開API、ABI、型、エラーコード、外部シンボルを保護
-- **Lizard**: CCN、NLOC、引数数を測定
-- **clang-tidy**: Cognitive Complexity、関数サイズ、ネストを確認
+- **clang-tidy**: Cognitive Complexity、関数サイズ、引数数、ネストを確認
 - **独自Check**: `company-internal-comments`で複雑な制御点と状態遷移のコメントを検査
 - **ラチェット方式**: 既存コードの大量修正を避け、関数単位の悪化を防止
 - **Agent対応**: 問題分類、WHYコメント、再解析までの作業ルールを提供
@@ -27,7 +26,7 @@ Coding Agent
 	Code change
 		 |
 		 v
- Build -> Unit Test -> Lizard -> clang-tidy
+ Build -> Unit Test -> clang-tidy
 																			|
 																			v
 												 Classify and improve safely
@@ -51,7 +50,7 @@ Coding Agent
 bash scripts/install-codex.sh
 ```
 
-このスクリプトはLLVM/Clang、CMake、Ninja、Lizardを準備し、`company-internal-comments`のビルドとテストを実行します。標準外のLLVMを使う場合は次のように指定できます。
+このスクリプトはLLVM/ClangとCMakeなど必要最小限の依存関係を準備し、CMakeの標準ジェネレーターで`company-internal-comments`のビルドとテストを実行します。標準外のLLVMを使う場合は次のように指定できます。
 
 ```sh
 LLVM_DIR=/opt/llvm/lib/cmake/llvm \
@@ -82,7 +81,6 @@ bash scripts/install-vscode-chat.sh
 ```sh
 BUILD_COMMAND='cmake --build build' \
 TEST_COMMAND='ctest --test-dir build --output-on-failure' \
-LIZARD_COMMAND='lizard -C 10 -T nloc=80 -a 6 -i -1 src include' \
 CLANG_TIDY_COMMAND='run-clang-tidy -p build' \
 bash tools/check-quality.sh
 ```
@@ -93,13 +91,12 @@ bash tools/check-quality.sh
 
 | Metric | Initial threshold | Policy |
 | --- | ---: | --- |
-| Lizard CCN | `<= 10` | New internal code |
-| Lizard NLOC | `<= 80` | New internal code |
-| Lizard arguments | `<= 6` | New internal code |
 | Cognitive Complexity | `<= 15` | New internal code |
+| Function size | `<= 80 lines` | New internal code |
+| Function arguments | `<= 6` | New internal code |
 | Nesting depth | `<= 3` | New internal code |
 
-既存コードは閾値超過だけで失敗にせず、ファイル・関数・指標単位で悪化を禁止します。たとえば既存CCN `18 -> 18`は原則許容、`18 -> 20`は改善対象です。プロジェクト固有規約がある場合はそちらを優先します。
+既存コードは閾値超過だけで失敗にせず、ファイル・関数・指標単位で悪化を禁止します。clang-tidyの各診断を変更前後で比較し、既存警告の一括修正は行いません。プロジェクト固有規約がある場合はそちらを優先します。
 
 ## Comment Check
 
@@ -132,7 +129,7 @@ custom-check/                 # company-internal-commentsの実装とテスト
 	tests/                      # PASS / FAILフィクスチャ
 references/                   # 品質ルールとAgent運用ルール
 scripts/                      # Codex / VS Code Chat導入スクリプト
-tools/check-quality.sh        # Build -> Test -> Lizard -> clang-tidy
+tools/check-quality.sh        # Build -> Test -> clang-tidy
 assets/                       # プロジェクトへコピーする雛形
 ```
 
@@ -149,7 +146,7 @@ assets/                       # プロジェクトへコピーする雛形
 
 - Generated、third-party、vendor、externalコードは導入先の既存ルールに従って除外します。
 - Custom Checkは初期実装でマクロ展開内を除外します。
-- 品質入口は導入先のBuild/Test/Lizard/clang-tidyコマンド設定が必要です。
+- 品質入口は導入先のBuild/Test/clang-tidyコマンド設定が必要です。
 - このリポジトリ自身はC/C++製品ソースを含まないため、製品のBuild/Test結果は報告対象にしません。
 
 ## License

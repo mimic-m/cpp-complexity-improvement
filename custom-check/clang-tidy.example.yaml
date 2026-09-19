@@ -6,6 +6,7 @@ Checks: >
   company-internal-comments
 CheckOptions:
   readability-function-cognitive-complexity.Threshold: 15
+  readability-function-size.LineThreshold: 80
   readability-function-size.ParameterThreshold: 6
   readability-function-size.NestingThreshold: 3
   company-internal-comments.RequireIfComment: true

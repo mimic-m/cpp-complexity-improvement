@@ -21,7 +21,7 @@
 - hardware、protocol、timing、memory layout上の制約
 - 関数の論理グループと現在の読み順
 
-既存のBuild、Test、Lizard、clang-tidy、format手順を確認し、編集前の結果を記録する。リポジトリに既存の可読性監査スクリプトや設定があれば利用するが、存在しない補助ファイル、設定、レポートを前提にしない。
+既存のBuild、Test、clang-tidy、format手順を確認し、編集前の結果を記録する。リポジトリに既存の可読性監査スクリプトや設定があれば利用するが、存在しない補助ファイル、設定、レポートを前提にしない。
 
 ## 変更してよいもの
 
@@ -66,10 +66,10 @@
 - prototypeとdefinitionの対応が追いやすいか
 - cleanupや例外経路の制約がコードだけで理解できるか
 
-Lizardやclang-tidyの値は書き換え命令ではなく、詳しく読む箇所を選ぶシグナルとして使う。プロジェクト規約がなければ次を注意ラインにできる。
+clang-tidyの値は書き換え命令ではなく、詳しく読む箇所を選ぶシグナルとして使う。プロジェクト規約がなければ次を注意ラインにできる。
 
-- CCN >= 10: 注意、CCN >= 15: 高優先
-- NLOC >= 40: 注意、NLOC >= 80: 高優先
+- Cognitive Complexity >= 15: 高優先
+- 関数サイズ >= 40行: 注意、>= 80行: 高優先
 - 引数数 >= 6
 - branchやnestingが多い
 - clang-tidy readability診断が集中している
@@ -148,7 +148,7 @@ static helperをcallerより下へ移す場合は、必要なprototypeを追加�
 
 既存format規約を優先する。clang-formatが既に設定されている場合も変更箇所中心に適用し、ファイル全体の無関係なformat差分を作らない。新しいformatツールをこのモードだけのために追加しない。
 
-編集後は変更前と同じBuild、Test、Lizard、clang-tidyを再実行し、`git diff` で次を確認する。
+編集後は変更前と同じBuild、Test、clang-tidyを再実行し、`git diff` で次を確認する。
 
 - 挙動変更を伴う差分がない
 - 差分が許可されたコメント、関数移動、forward declaration、局所formatだけである
@@ -177,7 +177,7 @@ static helperをcallerより下へ移す場合は、必要なprototypeを追加�
 - format:
 
 定量結果:
-- Max CCN: before -> after
+- Max Cognitive Complexity: before -> after
 - High-priority functions: before -> after
 - clang-tidy diagnostics: before -> after
 

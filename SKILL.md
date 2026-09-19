@@ -1,15 +1,15 @@
 ---
 name: cpp-complexity-improvement
-description: Review and refactor existing C/C++ code with Lizard and clang-tidy while preserving external API/ABI. Use for complexity gates, legacy-code ratchets, or no-behavior-change readability passes limited to intent comments and safe function ordering; not for general feature work.
+description: Review and refactor existing C/C++ code with clang-tidy while preserving external API/ABI. Use for complexity gates, legacy-code ratchets, or no-behavior-change readability passes limited to intent comments and safe function ordering; not for general feature work.
 metadata:
   version: "1.2"
   language: "ja"
-  compatibility: "Requires repository inspection and shell access; Lizard and clang-tidy may need project-approved installation."
+  compatibility: "Requires repository inspection and shell access; LLVM/Clang and clang-tidy may need project-approved installation."
 ---
 
 # C/C++ Complexity Improvement
 
-既存C/C++プロジェクトへ **Lizard + clang-tidy** による複雑度解析、ラチェット、動作保持リファクタリングを導入・適用する。
+既存C/C++プロジェクトへ **clang-tidy** による複雑度解析、ラチェット、動作保持リファクタリングを導入・適用する。
 
 ## モード選択
 
@@ -24,7 +24,7 @@ metadata:
 
 - 外部I/F・API/ABI・呼び出し側から観測可能な動作を変更しない。
 - 品質指標より既存仕様、Build、Testを優先する。
-- 追加する品質解析OSSは原則 Lizard と clang-tidy だけにする。既存ツールは維持する。
+- 追加する品質解析OSSはclang-tidyだけにする。既存ツールは維持する。
 - 実行していない検証や、ツール不足で実行できなかった検証を `PASS` と報告しない。
 - メトリクス値だけを下げるための分割、命名、抑制を行わない。
 
@@ -39,7 +39,7 @@ metadata:
 - C/C++ソース、公開/内部ヘッダ、仕様、テスト
 - Build/Test手順、CMake/Make/Meson/Ninja等の既存方式
 - `compile_commands.json` の生成方法と対象ファイルの収録状況
-- `.clang-tidy`、Lizard設定、既存静的解析、CI
+- `.clang-tidy`、既存静的解析、CI
 - `AGENTS.md`、`tools/`、`scripts/`、`ci/` 等のリポジトリ固有指示
 - 公開関数、公開型、エラーコード、エクスポートシンボル、CLI、プロトコル、ファイル形式などの保護対象
 
@@ -50,8 +50,8 @@ metadata:
 実際のリポジトリ手順で、編集前に次を実行・記録する。
 
 - Buildと関連Unit Test
-- Lizardとclang-tidyのバージョン
-- 変更候補関数の CCN、NLOC、引数数、Cognitive Complexity、ネスト深度
+- clang-tidyのバージョン
+- 変更候補関数のCognitive Complexity、関数サイズ、引数数、ネスト深度
 - 既存警告と対象外理由
 
 Build、Test、ツール、コンパイルDBが利用不能なら、試したコマンドと原因を記録する。利用不能な項目は `未実施` または `確認不可` とし、検証済みとは扱わない。
@@ -60,15 +60,12 @@ Build、Test、ツール、コンパイルDBが利用不能なら、試したコ
 
 新規内部コードにはプロジェクト規約を優先し、規約がなければ次を初期目安にする。
 
-- CCN <= 10
-- NLOC <= 80
-- 引数数 <= 6
 - Cognitive Complexity <= 15
+- 関数サイズ <= 80行
+- 引数数 <= 6
 - ネスト深度 <= 3
 
 既存コードは、閾値超過だけで一括FAILにしない。関数単位・指標単位の変更前値と比較し、悪化を禁止して改善または維持を要求する。警告総数だけの比較では、別の悪化が改善に相殺されるためラチェットとして不十分である。
-
-LizardでNLOCを指定するときは `-L` ではなく `-T nloc=80` を使う。`-L` は関数長の閾値であり、NLOCと同一ではない。
 
 clang-tidyでは対象チェックを有効化し、意図する閾値を明示する。既存 `.clang-tidy` は上書きせずマージする。差分行だけではなく、変更した関数を含む翻訳単位全体を解析する。
 
@@ -79,7 +76,6 @@ clang-tidyでは対象チェックを有効化し、意図する閾値を明示�
 ```text
 Build
 → Unit Test
-→ Lizard
 → clang-tidy
 ```
 
@@ -110,7 +106,7 @@ cleanup順序、lock/unlock、resource release、副作用、エラー順序、�
 
 ### 6. 同じ条件で再検証する
 
-変更前と同じBuild、Unit Test、Lizard、clang-tidyを再実行する。次も確認する。
+変更前と同じBuild、Unit Test、clang-tidyを再実行する。次も確認する。
 
 - 変更関数の各指標が悪化していない
 - 新規内部コードが基準内、または例外理由が記録されている
@@ -126,7 +122,7 @@ cleanup順序、lock/unlock、resource release、副作用、エラー順序、�
 
 1. プロジェクト調査結果
 2. 導入・変更した品質チェック
-3. Build / Test / Lizard / clang-tidy の実行コマンドと結果（未実施理由を含む）
+3. Build / Test / clang-tidy の実行コマンドと結果（未実施理由を含む）
 4. 変更関数の主要メトリクス Before / After
 5. Parameter Object化した場合の構造体名と理由
 6. 既存違反として残した項目

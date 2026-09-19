@@ -17,13 +17,6 @@ run_tests() {
     not_configured "Test"
 }
 
-run_lizard() {
-    # Report-only baseline example (not a ratchet by itself):
-    # lizard -C 10 -T nloc=80 -a 6 -i -1 src include
-    # Add a per-function before/after comparison or a new-function gate here.
-    not_configured "Lizard and its ratchet"
-}
-
 run_clang_tidy() {
     # Merge the required checks and thresholds into the existing .clang-tidy.
     # Example: run-clang-tidy -p build
@@ -35,9 +28,6 @@ run_build
 
 echo "=== Test ==="
 run_tests
-
-echo "=== Lizard ==="
-run_lizard
 
 echo "=== clang-tidy ==="
 run_clang_tidy

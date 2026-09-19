@@ -28,14 +28,18 @@ install_apt_dependencies() {
     apt_get="sudo apt-get"
   fi
 
-  local llvm_packages=(cmake ninja-build llvm-dev libclang-dev clang-tidy clang-tools)
+  local llvm_packages=(cmake)
+  if ! command_exists c++ || ! command_exists make; then
+    llvm_packages+=(build-essential)
+  fi
   if [[ -n "$LLVM_VERSION" ]]; then
-    llvm_packages=(
+    llvm_packages+=(
       "llvm-${LLVM_VERSION}-dev"
       "libclang-${LLVM_VERSION}-dev"
       "clang-tidy-${LLVM_VERSION}"
-      "clang-tools-${LLVM_VERSION}"
     )
+  else
+    llvm_packages+=(llvm-dev libclang-dev clang-tidy)
   fi
 
   log "Installing system dependencies with apt-get"
@@ -45,18 +49,15 @@ install_apt_dependencies() {
 
 install_brew_dependencies() {
   command_exists brew || fail "Neither apt-get nor brew is available"
-  log "Installing system dependencies with Homebrew"
-  brew install cmake ninja llvm
-}
-
-install_lizard() {
-  if command_exists lizard; then
-    log "Using existing lizard: $(lizard --version 2>&1 | head -n 1)"
+  local packages=()
+  command_exists cmake || packages+=(cmake)
+  command_exists clang-tidy || packages+=(llvm)
+  if ((${#packages[@]} == 0)); then
+    log "Using existing Homebrew dependencies"
     return
   fi
-
-  command_exists python3 || fail "python3 is required to install Lizard"
-  python3 -m pip install --user --upgrade lizard
+  log "Installing missing system dependencies with Homebrew"
+  brew install "${packages[@]}"
 }
 
 find_cmake_dir() {
@@ -87,7 +88,7 @@ build_custom_check() {
   [[ -n "$clang_dir" ]] || fail "ClangConfig.cmake was not found; set Clang_DIR"
 
   log "Configuring company-internal-comments"
-  cmake -S "$ROOT_DIR/custom-check" -B "$BUILD_DIR" -G Ninja \
+  cmake -S "$ROOT_DIR/custom-check" -B "$BUILD_DIR" \
     -DLLVM_DIR="$llvm_dir" \
     -DClang_DIR="$clang_dir"
   log "Building company-internal-comments"
@@ -125,7 +126,6 @@ main() {
       ;;
   esac
 
-  install_lizard
   export PATH="$PREFIX/bin:$PATH"
   build_custom_check
   run_custom_check_tests

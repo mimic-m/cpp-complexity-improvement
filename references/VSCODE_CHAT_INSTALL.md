@@ -24,7 +24,7 @@ Chatの実行環境がタスク実行を許可しない場合は、ターミナ�
 bash scripts/install-codex.sh
 ```
 
-このスクリプトはLLVM/Clang、CMake、Ninja、Lizardを準備し、`company-internal-comments`をビルドしてテストします。作業ディレクトリはリポジトリ外でも構いません。
+このスクリプトはLLVM/ClangとCMakeなど必要最小限の依存関係を準備し、CMakeの標準ジェネレーターで`company-internal-comments`をビルドしてテストします。作業ディレクトリはリポジトリ外でも構いません。
 
 環境変数で上書きできます。
 
@@ -40,4 +40,4 @@ Clang_DIR=/opt/llvm/lib/cmake/clang \
 bash scripts/install-codex.sh
 ```
 
-インストール後の品質チェックは、導入先プロジェクトで`tools/check-quality.sh`にBuild、Unit Test、Lizard、clang-tidyのコマンドを設定して実行します。
+インストール後の品質チェックは、導入先プロジェクトで`tools/check-quality.sh`にBuild、Unit Test、clang-tidyのコマンドを設定して実行します。

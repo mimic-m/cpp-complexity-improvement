@@ -14,25 +14,24 @@
 
 | 指標 | 初期基準 | 主な用途 |
 |---|---:|---|
-| Lizard CCN | <= 10 | 分岐・条件式 |
-| Lizard NLOC | <= 80 | 関数サイズ |
-| Lizard 引数数 | <= 6 | API/責務の複雑さ |
 | Cognitive Complexity | <= 15 | 人間の理解負荷 |
+| 関数サイズ | <= 80行 | 関数の大きさ |
+| 引数数 | <= 6 | API/責務の複雑さ |
 | ネスト深度 | <= 3 | 制御構造の読みやすさ |
 
 プロジェクト既存規約がある場合は、既存規約を優先する。
 
-Lizardの `length` と `nloc` は別指標である。NLOCの閾値には `-T nloc=80` を使い、`-L 80` で代用しない。
+関数サイズはclang-tidyの`readability-function-size.LineThreshold`で判定する。
 
 ## ラチェット方式
 
 | 状態 | 判定 |
 |---|---|
-| 新規 CCN 8 | PASS |
-| 新規 CCN 14 | FAIL / 改善 |
-| 既存 18 → 18 | 原則許容 |
-| 既存 18 → 20 | FAIL |
-| 既存 18 → 14 | PASS |
+| 新規 Cognitive Complexity 8 | PASS |
+| 新規 Cognitive Complexity 16 | FAIL / 改善 |
+| 既存診断・指標 18 → 18 | 原則許容 |
+| 既存診断・指標 18 → 20 | FAIL |
+| 既存診断・指標 18 → 14 | PASS |
 
 差分判定のためだけに巨大な独自解析基盤を作らない。
 
@@ -40,19 +39,12 @@ Lizardの `length` と `nloc` は別指標である。NLOCの閾値には `-T nl
 
 - ファイルパス
 - 関数名または安定した関数識別子
-- CCN
-- NLOC
+- 関数サイズ
 - 引数数
 - Cognitive Complexity
 - ネスト深度
 
-Lizardの変更前レポートを終了コードでゲートしない場合は、報告専用として次のように実行できる。
-
-```sh
-lizard -C 10 -T nloc=80 -a 6 -i -1 src include
-```
-
-`-i -1` は警告を許容してレポートを得るためのオプションであり、ラチェット判定そのものではない。CIの合否は、保存した変更前値との関数単位比較、または新規関数だけの閾値判定で決める。
+clang-tidyの診断は、既存コードの警告数だけでなくファイル・関数・診断種別単位で変更前後を比較する。警告総数だけの比較では、ある関数の改善が別の関数の悪化を相殺できるため、ラチェット判定として不十分である。
 
 ## 外部I/Fの識別
 
@@ -168,7 +160,7 @@ CheckOptions:
   readability-function-size.NestingThreshold: 3
 ```
 
-既存の `Checks` や `CheckOptions` は保持する。LizardのNLOCとclang-tidyの行数は同一指標ではないため、`LineThreshold` をNLOCの代用として機械的に設定しない。
+既存の `Checks` や `CheckOptions` は保持する。`LineThreshold`はclang-tidyの関数サイズ指標として設定する。
 
 解析には対象ソースを含む有効な `compile_commands.json` が必要である。差分行だけの解析は、関数宣言行に出る診断やヘッダ変更の影響を見落とし得るため、変更関数を含む翻訳単位全体を対象にする。
 
@@ -176,7 +168,6 @@ CheckOptions:
 
 ツール仕様:
 
-- [Lizard README](https://github.com/terryyin/lizard/blob/master/README.rst)
 - [clang-tidy: readability-function-cognitive-complexity](https://clang.llvm.org/extra/clang-tidy/checks/readability/function-cognitive-complexity.html)
 - [clang-tidy: readability-function-size](https://clang.llvm.org/extra/clang-tidy/checks/readability/function-size.html)
 

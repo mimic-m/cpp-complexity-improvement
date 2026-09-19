@@ -3,7 +3,6 @@ set -euo pipefail
 
 : "${BUILD_COMMAND:?Set BUILD_COMMAND to the repository build command}"
 : "${TEST_COMMAND:?Set TEST_COMMAND to the repository unit-test command}"
-: "${LIZARD_COMMAND:?Set LIZARD_COMMAND to the repository Lizard command}"
 : "${CLANG_TIDY_COMMAND:?Set CLANG_TIDY_COMMAND to the repository clang-tidy command}"
 
 run_phase() {
@@ -15,6 +14,5 @@ run_phase() {
 
 run_phase "Build" "$BUILD_COMMAND"
 run_phase "Unit Test" "$TEST_COMMAND"
-run_phase "Lizard" "$LIZARD_COMMAND"
 run_phase "clang-tidy" "$CLANG_TIDY_COMMAND"
 printf '\n=== Quality check completed ===\n'

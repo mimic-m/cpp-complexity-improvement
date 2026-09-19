@@ -1,6 +1,6 @@
 # Coding Agent品質ループ
 
-品質チェックは作業完了条件です。`Build`、`Unit Test`、`Lizard`、`clang-tidy`を順番に実行し、失敗時は直ちに終了せず原因を分類して修正します。
+品質チェックは作業完了条件です。`Build`、`Unit Test`、`clang-tidy`を順番に実行し、失敗時は直ちに終了せず原因を分類して修正します。
 
 ## 分類と対応
 
@@ -20,8 +20,8 @@
 ## 変更前後の確認
 
 - 公開ヘッダ、関数シグネチャ、公開型、エラーコード、ABI、外部シンボルを変更しない
-- 既存関数は関数単位でCCN、NLOC、引数数、Cognitive Complexity、ネストの悪化を許さない
-- 新規内部コードはCCN 10、NLOC 80、引数数6、Cognitive Complexity 15、ネスト3を初期基準とする
+- 既存関数はclang-tidyのCognitive Complexity、関数サイズ、引数数、ネストの悪化を許さない
+- 新規内部コードはCognitive Complexity 15、関数サイズ80行、引数数6、ネスト3を初期基準とする
 - 不明なI/Fは外部I/Fとして扱い変更しない
 - `NOLINT(company-internal-comments)`は根拠を確認した局所例外だけにする
 
