@@ -1,0 +1,19 @@
+# Merge these entries into the target project's existing .clang-tidy.
+Checks: >
+  -*,
+  readability-function-cognitive-complexity,
+  readability-function-size,
+  company-internal-comments
+CheckOptions:
+  readability-function-cognitive-complexity.Threshold: 15
+  readability-function-size.ParameterThreshold: 6
+  readability-function-size.NestingThreshold: 3
+  company-internal-comments.RequireIfComment: true
+  company-internal-comments.RequireForComment: true
+  company-internal-comments.RequireWhileComment: true
+  company-internal-comments.RequireStateComment: true
+  company-internal-comments.IgnoreSimpleGuardClause: true
+  company-internal-comments.BooleanOperatorThreshold: 1
+  company-internal-comments.MaxBlankLines: 1
+  company-internal-comments.StateNamesRegex: '^(state|status|mode|phase|step|current_state|next_state|device_state|machine_state|seq_state|run_mode)$'
+  company-internal-comments.StateSetterRegex: '^(set_state|change_state|transition_to|set_status|set_mode|change_mode)$'
